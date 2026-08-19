@@ -1,0 +1,9 @@
+# 核心运行（零依赖即可跑 rulebased 后端 + TF-IDF 检索）：仅 Python 标准库。
+
+# 接入真 LLM（LLM_BACKEND=openai）：OpenAI 兼容 SDK，支持 OpenAI/DeepSeek/通义/智谱/本地 Ollama
+openai>=1.30
+
+# 升级为向量检索（推荐，离线可跑，无需 key）：中文语义召回
+sentence-transformers>=2.3
+# 注：sentence-transformers 会拉取 torch；如仅需轻量向量，可改用 below 注释的 onnx 方案。
+# 在线 embedding 备选（不走本地模型）：pip install openai 即可用 OPENAI_EMBEDDING_MODEL

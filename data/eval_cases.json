@@ -1,0 +1,181 @@
+{
+  "meta": {
+    "desc": "RAG Agent 真实评测集（21 条）。数据来自 clean_supply_chain.csv（真实公开数据），知识来自 knowledge_base/ 三个带出处 SOP。",
+    "distribution": {
+      "rag": 6,
+      "tool": 7,
+      "hybrid": 8,
+      "total": 21
+    },
+    "metrics": {
+      "recall_at_3": "仅对 rag/hybrid 子集计算：正确答案所在 chunk 是否进入 top3 召回",
+      "end2end_accuracy": "全部 21 条：最终答案是否正确（rag=公式/定义正确；tool=数值/统计正确；hybrid=公式+数均正确）",
+      "intent_accuracy": "意图路由（rag/tool/hybrid）分类准确率"
+    },
+    "status_note": "expected 已由评测流水线基于真实数据/真实SOP算出（非预设）。"
+  },
+  "cases": [
+    {
+      "id": "RAG-01",
+      "type": "rag",
+      "query": "如何计算安全库存？给出公式与各参数含义。",
+      "grounding": "business_rules.md > 1. 安全库存",
+      "expected": "（rag 类）"
+    },
+    {
+      "id": "RAG-02",
+      "type": "rag",
+      "query": "再订货点 ROP 的公式是什么？",
+      "grounding": "business_rules.md > 2. 再订货点",
+      "expected": "（rag 类）"
+    },
+    {
+      "id": "RAG-03",
+      "type": "rag",
+      "query": "EOQ 经济订货批量公式及 D/S/H 参数含义？",
+      "grounding": "algorithm_params.md > 1. 经济订货批量 EOQ",
+      "expected": "（rag 类）"
+    },
+    {
+      "id": "RAG-04",
+      "type": "rag",
+      "query": "什么是 ABC 分类？A/B/C 各类约占多少金额与 SKU 比例？",
+      "grounding": "algorithm_params.md > 2. ABC 分类",
+      "expected": "（rag 类）"
+    },
+    {
+      "id": "RAG-05",
+      "type": "rag",
+      "query": "AQL 2.5% 是什么意思？缺陷率超过多少算不达标？",
+      "grounding": "sop.md > SOP-1 缺陷率判定",
+      "expected": "（rag 类）"
+    },
+    {
+      "id": "RAG-06",
+      "type": "rag",
+      "query": "供应商综合评分卡看哪些维度、各自权重多少？",
+      "grounding": "sop.md > SOP-2 供应商综合评分卡",
+      "expected": "（rag 类）"
+    },
+    {
+      "id": "TOOL-01",
+      "type": "tool",
+      "query": "SKU0 的缺陷率是多少？是否超过 AQL 2.5%？",
+      "grounding": "clean_supply_chain.csv: sku=SKU0 -> defect_rate",
+      "verify": "取 SKU0 行 defect_rate，与 0.025 比较",
+      "expected": "SKU0 缺陷率 0.2264，超过 AQL 2.5%"
+    },
+    {
+      "id": "TOOL-02",
+      "type": "tool",
+      "query": "列出 Mumbai 库存水平最低的 5 个 SKU。",
+      "grounding": "clean_supply_chain.csv: location=Mumbai 按 stock_level 升序",
+      "verify": "filter location=Mumbai, sort stock_level asc, top5",
+      "expected": "Mumbai 库存最低5: SKU2=1, SKU8=5, SKU78=5, SKU67=12, SKU95=15"
+    },
+    {
+      "id": "TOOL-03",
+      "type": "tool",
+      "query": "哪个供应商的平均缺陷率最高？",
+      "grounding": "clean_supply_chain.csv: group by supplier_name mean(defect_rate)",
+      "verify": "分组求均值取最大",
+      "expected": "缺陷率最高供应商 Supplier 5 均值 2.6654"
+    },
+    {
+      "id": "TOOL-04",
+      "type": "tool",
+      "query": "SKU0 的提前期(lead_time_days)与报价提前期(lead_times_days)分别是多少？",
+      "grounding": "clean_supply_chain.csv: sku=SKU0 两列",
+      "verify": "取两字段值",
+      "expected": "SKU0 报价提前期(lead_times_days)=7.0，实际提前期(lead_time_days)=29.0"
+    },
+    {
+      "id": "TOOL-05",
+      "type": "tool",
+      "query": "库存水平低于 10 的 SKU 有哪些？",
+      "grounding": "clean_supply_chain.csv: stock_level<10",
+      "verify": "filter stock_level<10",
+      "expected": "库存<10 的SKU: SKU2, SKU4, SKU8, SKU15, SKU16, SKU24, SKU31, SKU33, SKU34, SKU47, SKU57, SKU68, SKU78, SKU87 (共14个)"
+    },
+    {
+      "id": "TOOL-06",
+      "type": "tool",
+      "query": "各城市的平均提前期(lead_time_days)各是多少？",
+      "grounding": "clean_supply_chain.csv: group by location mean(lead_time_days)",
+      "verify": "分组求均值",
+      "expected": "各城市平均提前期: Mumbai=15.32, Kolkata=19.44, Delhi=14.60, Bangalore=16.28, Chennai=18.65"
+    },
+    {
+      "id": "TOOL-07",
+      "type": "tool",
+      "query": "SKU0 的单价、运费、制造成本、总成本分别是多少？",
+      "grounding": "clean_supply_chain.csv: sku=SKU0 四列",
+      "verify": "取 price/shipping_cost/mfg_cost/total_cost",
+      "expected": "SKU0 单价=69.81 运费=2.96 制造成本=46.28 总成本=187.75"
+    },
+    {
+      "id": "HY-01",
+      "type": "hybrid",
+      "query": "用安全库存公式，SKU0 要支持 95% 服务水平(Z=1.65)，安全库存应设多少？（σ_d 取 units_sold 标准差，L 取 lead_time_days）",
+      "grounding": "business_rules.md > 1. 安全库存",
+      "verify": "SS=1.65*σ_d*√L，σ_d、L 由数据算",
+      "expected": "安全库存≈2685.7（σ_d=302.3, L=29）"
+    },
+    {
+      "id": "HY-02",
+      "type": "hybrid",
+      "query": "用 EOQ 估算 SKU0 的经济订货批量（D=units_sold，S=shipping_cost，H=mfg_cost×0.25 持有率）。",
+      "grounding": "algorithm_params.md > 1. 经济订货批量 EOQ",
+      "verify": "EOQ=√(2DS/H)",
+      "expected": "EOQ≈20.3（D=802, S=2.96, H=11.57）"
+    },
+    {
+      "id": "HY-03",
+      "type": "hybrid",
+      "query": "按营收对全部 SKU 做 ABC 分类，前 20% SKU 贡献多少比例营收？",
+      "grounding": "algorithm_params.md > 2. ABC 分类",
+      "verify": "按 revenue 降序累计占比",
+      "expected": "top20%SKU=20.0% 贡献营收 31.8%"
+    },
+    {
+      "id": "HY-04",
+      "type": "hybrid",
+      "query": "SKU0 缺陷率超 AQL，按 SOP 应判为哪类风险供应商？",
+      "grounding": "sop.md > SOP-1 缺陷率判定",
+      "verify": "defect_rate>0.025 -> 质量不达标 -> 高风险",
+      "expected": "SKU0 缺陷率0.2264>0.025 → 质量不达标 → 高风险供应商"
+    },
+    {
+      "id": "HY-05",
+      "type": "hybrid",
+      "query": "Mumbai 仓哪个 SKU 最该优先补货（结合库存覆盖与缺陷风险）？",
+      "grounding": "sop.md > SOP-1 缺陷率判定",
+      "verify": "低 stock_level 且高 defect_rate 优先",
+      "expected": "Mumbai 最优先补货: SKU2(库存1,缺陷率4.5806)"
+    },
+    {
+      "id": "HY-06",
+      "type": "hybrid",
+      "query": "若 SKU0 的 lead_time_days 高于全数据集均值+2σ，按 SOP 是否触发提前期预警？",
+      "grounding": "business_rules.md > 3. 应用说明",
+      "verify": "比较 L 与 mean+2σ",
+      "expected": "SKU0 实际提前期29 <= 基线34.68 → 不触发预警"
+    },
+    {
+      "id": "HY-07",
+      "type": "hybrid",
+      "query": "按供应商评分卡，SKU0 的推荐供应商在质量与交付上是否达标？",
+      "grounding": "sop.md > SOP-2 供应商综合评分卡",
+      "verify": "质量(缺陷率)与交付(OTIF 代理)评分",
+      "expected": "供应商Supplier 3 质量不达标(缺陷率0.2264) 交付达标(提前期29)"
+    },
+    {
+      "id": "HY-08",
+      "type": "hybrid",
+      "query": "按 ABC 结论，C 类 SKU 应采用什么补货管控策略？",
+      "grounding": "algorithm_params.md > 3. 应用说明",
+      "verify": "C 类 -> 宽松管控(高 ROP/低复盘)",
+      "expected": "C类SKU → 宽松管控（高ROP/低复盘频次）"
+    }
+  ]
+}
