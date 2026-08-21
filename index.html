@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>supply-chain-llm-agent · 真·LLM 版供应链 RAG Agent</title>
+<title>supply-chain-llm-agent · LLM 版供应链 RAG Agent</title>
 <style>
   :root{
     --bg:#0d1117; --panel:#161b22; --panel-2:#1c2230; --border:#2a3340;
@@ -59,8 +59,8 @@
 <header>
   <div class="wrap">
     <div class="eyebrow">Supply-Chain · LLM Agent</div>
-    <h1>真·LLM 版供应链 RAG Agent</h1>
-    <p class="lead">把"关键词匹配原型"升级为真正调用大模型的 Agent：用 <b style="color:var(--text)">LLM function calling</b> 做意图路由与工具调度，用<b style="color:var(--text)">向量检索</b>替代 TF-IDF，用<b style="color:var(--text)">LLM 生成</b>替代模板填空。核心原则：<b style="color:var(--text)">LLM 管"脑"，确定性代码管"手"</b>——数值计算与检索执行一律由真实工具完成，模型不碰数。</p>
+    <h1>LLM 版供应链 RAG Agent</h1>
+    <p class="lead">把"关键词匹配原型"升级为由 LLM function calling 驱动的 Agent：用 <b style="color:var(--text)">LLM function calling</b> 做意图路由与工具调度，用<b style="color:var(--text)">向量检索</b>替代 TF-IDF，用<b style="color:var(--text)">LLM 生成</b>替代模板填空。核心原则：<b style="color:var(--text)">LLM 管"脑"，确定性代码管"手"</b>——数值计算与检索执行一律由真实工具完成，模型不碰数。</p>
     <div class="tags">
       <span class="tag">RAG + Agent</span>
       <span class="tag">Function Calling</span>
@@ -79,11 +79,11 @@
 
 <section>
   <div class="wrap">
-    <h2>为什么升级：关键词版 vs 真·LLM 版</h2>
+    <h2>为什么升级：关键词版 vs LLM 版</h2>
     <p class="note">下方是每个环节的"谁来做决定"。关键词版里所有智能都在代码规则里；LLM 版把理解、调度、表达交给模型，计算与检索仍由确定性代码执行。</p>
     <div class="card">
       <table>
-        <thead><tr><th>环节</th><th><span class="pill pill-kw">关键词版</span></th><th><span class="pill pill-llm">真·LLM 版</span></th></tr></thead>
+        <thead><tr><th>环节</th><th><span class="pill pill-kw">关键词版</span></th><th><span class="pill pill-llm">LLM 版</span></th></tr></thead>
         <tbody>
           <tr><td>意图路由</td><td>三张关键词表命中 → rag/tool/hybrid</td><td><span class="ok">LLM function calling</span> 自己选工具 + 抽参数</td></tr>
           <tr><td>知识检索</td><td>TF-IDF 字符匹配 + 同义词补丁</td><td><span class="ok">离线向量召回</span>（BGE-small-zh），不可用时回退 TF-IDF</td></tr>
@@ -161,20 +161,20 @@
         <line x1="510" y1="255" x2="555" y2="180" stroke="#9aa7b4" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#ar)"/>
       </svg>
     </div>
-    <p class="note">蓝色节点＝真正调用 LLM 的地方；绿色＝真实数据工具（绝不让模型算数）；灰色虚线＝无 API Key 时自动回退到关键词逻辑，保证 demo 永远可跑。</p>
+    <p class="note">蓝色节点＝调用 LLM 的地方；绿色＝真实数据工具（绝不让模型算数）；灰色虚线＝无 API Key 时自动回退到关键词逻辑，保证 demo 永远可跑。</p>
   </div>
 </section>
 
 <section>
   <div class="wrap">
-    <h2>双后端：没 Key 也能跑，有 Key 立刻变真 LLM</h2>
+    <h2>双后端：没 Key 也能跑，有 Key 立刻切换 LLM</h2>
     <div class="grid2">
       <div class="card">
         <h3 style="margin-top:0">RuleBasedBackend（默认）</h3>
         <p>复用关键词版链路，零外部依赖。21 条评测与冒烟测试 100% 复现，作为离线兜底与对照基线。适合快速看效果、做演示。</p>
       </div>
       <div class="card">
-        <h3 style="margin-top:0">OpenAIBackend（真 LLM）</h3>
+        <h3 style="margin-top:0">OpenAIBackend（LLM）</h3>
         <p>OpenAI 兼容接口：DeepSeek / 通义 / 智谱 / 本地 Ollama 都能用（只换 base_url）。任一 LLM 环节失败自动回退规则，不崩。</p>
       </div>
     </div>
@@ -182,7 +182,7 @@
     <pre><span class="kv"># 零依赖（默认规则后端）</span>
 python src/demo.py
 
-<span class="kv"># 开启真 LLM</span>
+<span class="kv"># 开启 LLM</span>
 pip install openai
 set LLM_BACKEND=openai
 set OPENAI_API_KEY=sk-xxx
